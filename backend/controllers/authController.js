@@ -94,6 +94,29 @@ exports.registerStudent = async (req, res) => {
   }
 };
 
+// @desc    Bootstrap first admin (only works if no admin exists)
+// @route   POST /api/auth/bootstrap
+exports.bootstrap = async (req, res) => {
+  try {
+    const existingAdmin = await User.findOne({ role: 'admin' });
+    if (existingAdmin) {
+      return res.status(400).json({ message: 'An admin already exists. Use the login page instead.' });
+    }
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'Name, email, and password are required' });
+    }
+    const user = await User.create({ name, email, password, role: 'admin' });
+    const token = generateToken(user._id, user.role);
+    res.status(201).json({ message: 'Admin account created', token, user: publicUser(user) });
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).json({ message: 'A user with this email already exists' });
+    }
+    res.status(400).json({ message: err.message });
+  }
+};
+
 // @desc    Get the logged-in user's own profile
 // @route   GET /api/auth/me
 exports.getMe = async (req, res) => {
