@@ -7,8 +7,8 @@ router.use(protect);
 
 router.get('/course/:courseId', getCourseTests);
 router.get('/:id', getTest);
-router.post('/', authorize('admin'), createTest);
-router.put('/:id', authorize('admin'), updateTest);
-router.delete('/:id', authorize('admin'), deleteTest);
+router.post('/', authorize('admin', 'teacher'), createTest);
+router.put('/:id', authorize('admin', 'teacher'), updateTest);
+router.delete('/:id', authorize('admin', 'teacher'), deleteTest);
 
 module.exports = router;

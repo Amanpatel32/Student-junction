@@ -5,7 +5,7 @@ const publicUser = (user) => ({
   _id: user._id,
   name: user.name,
   email: user.email,
-  role: user.role === 'teacher' ? 'admin' : user.role,
+  role: user.role,
   phone: user.phone,
   rollNumber: user.rollNumber,
   batch: user.batch,

@@ -31,9 +31,7 @@ exports.protect = async (req, res, next) => {
 
 // Restricts a route to specific roles, e.g. authorize('admin', 'teacher')
 exports.authorize = (...roles) => (req, res, next) => {
-  // Map teacher role to admin since teacher is no longer used
-  const effectiveRole = req.user.role === 'teacher' ? 'admin' : req.user.role;
-  if (!roles.includes(effectiveRole)) {
+  if (!roles.includes(req.user.role)) {
     return res.status(403).json({ message: `Role "${req.user.role}" is not permitted to perform this action` });
   }
   next();

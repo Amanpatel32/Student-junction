@@ -5,10 +5,10 @@ const { protect, authorize } = require('../middleware/auth');
 
 router.use(protect);
 
-router.post('/', authorize('admin'), createMark);
-router.put('/:id', authorize('admin'), updateMark);
-router.delete('/:id', authorize('admin'), deleteMark);
-router.get('/course/:courseId', authorize('admin'), getCourseMarks);
-router.get('/report-card/:courseId', getReportCard); // student (self) or teacher/admin (?studentId=)
+router.post('/', authorize('admin', 'teacher'), createMark);
+router.put('/:id', authorize('admin', 'teacher'), updateMark);
+router.delete('/:id', authorize('admin', 'teacher'), deleteMark);
+router.get('/course/:courseId', authorize('admin', 'teacher'), getCourseMarks);
+router.get('/report-card/:courseId', getReportCard);
 
 module.exports = router;
