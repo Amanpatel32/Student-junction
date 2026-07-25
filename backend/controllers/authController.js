@@ -5,7 +5,6 @@ const publicUser = (user) => ({
   _id: user._id,
   name: user.name,
   email: user.email,
-  // Map teacher role to admin since teacher is no longer used
   role: user.role === 'teacher' ? 'admin' : user.role,
   phone: user.phone,
   rollNumber: user.rollNumber,
@@ -16,8 +15,6 @@ const publicUser = (user) => ({
   approvalStatus: user.approvalStatus,
 });
 
-// @desc    Log in with email + password
-// @route   POST /api/auth/login
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -44,8 +41,6 @@ exports.login = async (req, res) => {
   }
 };
 
-// @desc    Create a new user account (admin creates teachers/students; admin can also create other admins)
-// @route   POST /api/auth/register
 exports.register = async (req, res) => {
   try {
     const user = await User.create(req.body);
@@ -62,8 +57,6 @@ exports.register = async (req, res) => {
   }
 };
 
-// @desc    Public self-registration for students; account starts Pending until an admin approves it
-// @route   POST /api/auth/register-student
 exports.registerStudent = async (req, res) => {
   try {
     const { name, email, password, phone, rollNumber, batch, guardianName, guardianPhone } = req.body;
@@ -71,10 +64,7 @@ exports.registerStudent = async (req, res) => {
       return res.status(400).json({ message: 'Name, email, and password are required' });
     }
 
-    // Force role/approval server-side — never trust these from the request body on a public route
     const payload = { name, email, password, phone, role: 'student', approvalStatus: 'Pending' };
-    // Only set optional unique-indexed fields if actually provided, so multiple blank
-    // submissions don't collide on the sparse unique index
     if (rollNumber) payload.rollNumber = rollNumber;
     if (batch) payload.batch = batch;
     if (guardianName) payload.guardianName = guardianName;
@@ -94,15 +84,23 @@ exports.registerStudent = async (req, res) => {
   }
 };
 
-// @desc    Bootstrap first admin (only works if no admin exists)
-// @route   POST /api/auth/bootstrap
 exports.bootstrap = async (req, res) => {
   try {
+    const { name, email, password, force } = req.body;
     const existingAdmin = await User.findOne({ role: 'admin' });
+
     if (existingAdmin) {
+      if (force === true && email && password) {
+        existingAdmin.password = password;
+        if (name) existingAdmin.name = name;
+        if (email) existingAdmin.email = email.toLowerCase();
+        await existingAdmin.save();
+        const token = generateToken(existingAdmin._id, existingAdmin.role);
+        return res.status(200).json({ message: 'Admin password reset successfully', token, user: publicUser(existingAdmin) });
+      }
       return res.status(400).json({ message: 'An admin already exists. Use the login page instead.' });
     }
-    const { name, email, password } = req.body;
+
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email, and password are required' });
     }
@@ -117,8 +115,6 @@ exports.bootstrap = async (req, res) => {
   }
 };
 
-// @desc    Get the logged-in user's own profile
-// @route   GET /api/auth/me
 exports.getMe = async (req, res) => {
   res.status(200).json(publicUser(req.user));
 };
