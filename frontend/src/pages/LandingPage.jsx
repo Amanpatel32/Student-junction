@@ -27,6 +27,9 @@ import { submitEnquiry } from '../api/enquiries';
 import { fetchGallery } from '../api/gallery';
 import AnimatedCounter from '../components/ui/AnimatedCounter';
 
+// Builds a full URL for uploaded images (same pattern as AdminGallery.jsx)
+const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace('/api', '');
+
 // Scroll reveal hook
 function useReveal() {
   useEffect(() => {
@@ -84,12 +87,11 @@ export default function LandingPage() {
 
   useReveal();
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
+  // Fetch gallery images for the public landing page
   useEffect(() => {
     fetchGallery()
       .then((data) => {
-        setGalleryItems(data || []);
+        setGalleryItems(data);
         setGalleryLoading(false);
       })
       .catch(() => {
@@ -97,6 +99,8 @@ export default function LandingPage() {
         setGalleryLoading(false);
       });
   }, []);
+
+  const imgUrl = (path) => `${BASE_URL}${path || ''}`;
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
@@ -367,7 +371,7 @@ export default function LandingPage() {
                 >
                   <div className="aspect-[4/3] overflow-hidden">
                     <img
-                      src={`${API_URL}${item.image}`}
+                      src={imgUrl(item.image)}
                       alt={item.caption || 'Gallery photo'}
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
                       loading="lazy"
@@ -433,7 +437,7 @@ export default function LandingPage() {
           {/* Image */}
           <div className="flex flex-col items-center max-w-5xl max-h-[90vh] px-4" onClick={(e) => e.stopPropagation()}>
             <img
-              src={`${API_URL}${galleryItems[lightboxIndex].image}`}
+              src={imgUrl(galleryItems[lightboxIndex].image)}
               alt={galleryItems[lightboxIndex].caption || 'Gallery photo'}
               className="max-h-[75vh] w-auto max-w-full rounded-lg object-contain shadow-2xl animate-scale-in"
             />
@@ -626,4 +630,3 @@ export default function LandingPage() {
     </div>
   );
 }
-

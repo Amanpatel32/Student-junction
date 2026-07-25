@@ -9,6 +9,8 @@ import { Pill } from '../../components/ui/Badge';
 import { useToast } from '../../components/ui/Toast';
 import { Skeleton } from '../../components/ui/Skeleton';
 
+const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace('/api', '');
+
 export default function AdminGallery() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +34,7 @@ export default function AdminGallery() {
 
   useEffect(load, []);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const imgUrl = (path) => `${BASE_URL}${path || ''}`;
 
   const openAdd = () => {
     setEditing(null);
@@ -158,7 +160,7 @@ export default function AdminGallery() {
                 onClick={() => setViewImage(item)}
               >
                 <img
-                  src={`${API_URL}${item.image}`}
+                  src={imgUrl(item.image)}
                   alt={item.caption || 'Gallery photo'}
                   className="h-full w-full object-cover transition duration-300 group-hover:scale-110"
                 />
@@ -203,25 +205,22 @@ export default function AdminGallery() {
                     <Trash2 size={15} />
                   </button>
                 </div>
-              </div>
+            </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Add/Edit modal */}
       {modalOpen && (
         <Modal title={editing ? 'Edit Photo' : 'Add Photo to Gallery'} onClose={() => setModalOpen(false)}>
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && <div className="rounded-lg bg-campus-redSoft px-4 py-3 text-sm text-campus-red border border-campus-red/20">{error}</div>}
-
-            {/* Image preview/upload */}
             <div>
               <label className={labelClass}>Photo</label>
               {(preview || (editing && !file)) && (
                 <div className="relative mb-3 rounded-lg overflow-hidden">
                   <img
-                    src={preview || `${API_URL}${editing.image}`}
+                    src={preview || imgUrl(editing.image)}
                     alt="Preview"
                     className="w-full h-48 object-cover rounded-lg"
                   />
@@ -242,7 +241,6 @@ export default function AdminGallery() {
                 className="w-full rounded-lg border border-dashed border-campus-line bg-white px-4 py-3 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-campus-forest file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white hover:file:bg-campus-forestLight"
               />
             </div>
-
             <div>
               <label className={labelClass}>Event / Activity name</label>
               <input
@@ -252,7 +250,6 @@ export default function AdminGallery() {
                 placeholder="e.g. Annual Day 2025, Science Exhibition"
               />
             </div>
-
             <div>
               <label className={labelClass}>Caption (optional)</label>
               <textarea
@@ -263,10 +260,9 @@ export default function AdminGallery() {
                 placeholder="A brief description of this photo"
               />
             </div>
-
             <div className="flex justify-end gap-3 border-t border-campus-line pt-4">
               <Button type="button" variant="secondary" onClick={() => setModalOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={saving} loading={saving}>
+              <Button type="submit" disabled={saving}>
                 {saving ? 'Saving…' : editing ? 'Save changes' : 'Add to gallery'}
               </Button>
             </div>
@@ -274,12 +270,11 @@ export default function AdminGallery() {
         </Modal>
       )}
 
-      {/* Image viewer modal */}
       {viewImage && (
         <Modal title={viewImage.eventName || 'Gallery Photo'} onClose={() => setViewImage(null)} wide>
           <div className="flex flex-col items-center">
             <img
-              src={`${API_URL}${viewImage.image}`}
+              src={imgUrl(viewImage.image)}
               alt={viewImage.caption || 'Gallery photo'}
               className="max-h-[60vh] w-full rounded-lg object-contain bg-campus-paperDim"
             />
@@ -308,4 +303,3 @@ export default function AdminGallery() {
     </div>
   );
 }
-
